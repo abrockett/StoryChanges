@@ -1,3 +1,14 @@
+Ext.define('Rally.ui.projectComboBox', {
+	extend: 'Rally.ui.ComboBox',
+	alias: 'widget.rallyprojectcombobox',
+	config: {
+        storeConfig: {
+            fetch: ["Name"],
+            model: 'Project'
+        }
+    }    
+});
+
 Ext.define('CustomApp', {
     extend: 'Rally.app.App',
     componentCls: 'app',
@@ -21,6 +32,17 @@ Ext.define('CustomApp', {
     
     launch: function() {
         this.down('#controls').add({
+            xtype: 'rallyprojectcombobox',
+            itemId: 'projectField',
+            fieldLabel: 'Project:',
+            width: 300,
+            listeners: {
+                change: this._onProjectChange,
+                scope: this
+            }
+        });
+        
+        this.down('#controls').add({
             xtype: 'datefield',
             itemId: 'startDateField',
             fieldLabel: 'From: ',
@@ -29,6 +51,7 @@ Ext.define('CustomApp', {
                 scope: this
             }
         });
+        
         this.down('#controls').add({
             xtype: 'datefield',
             itemId: 'endDateField',
@@ -38,7 +61,6 @@ Ext.define('CustomApp', {
                 scope: this
             }
         });
-        this.update();
     },
     
     _onFromChange: function(field, newValue) {
@@ -49,9 +71,15 @@ Ext.define('CustomApp', {
         alert(newValue);
     },
     
+    _onProjectChange: function(field, newValue) {
+        var tokens = newValue.split('/');
+        this.projectOid = tokens[tokens.length-1].split('.')[0];
+        this.update();
+    },
+    
     update: function(){
         
-        var query = '{"ObjectID": {$gt:0},"__At": "current"}';
+        var query = '{"ObjectID": {$gt:0},"__At": "current", "Project": ' + this.projectOid + '}';
         var selectedFields = 'ObjectID, _ValidFrom, _UnformattedID, Name';
         if(selectedFields){
             if(selectedFields === 'true'){
